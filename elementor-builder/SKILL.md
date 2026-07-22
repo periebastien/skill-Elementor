@@ -54,6 +54,43 @@ script PHP exécuté par `wp eval-file`. Règle d'or : **widgets natifs d'abord*
     `background_color` (+ activateur non requis pour button), `border_radius`,
     `text_padding`, hover : `button_background_hover_color`.
 
+## Effets au survol (hover) — onglet Avancé, applicables à quasi tous les widgets
+
+Clés vérifiées en inspectant le JSON produit par l'éditeur Elementor (préfixe `_`,
+suffixe `_hover`). Trois mécanismes combinables :
+
+```php
+// 1. Transform (ex. translation verticale au survol)
+'_transform_translate_popover'       => 'transform',   // activateur état normal
+'_transform_translate_popover_hover' => 'transform',   // activateur état hover (OBLIGATOIRE)
+'_transform_translateX_effect_hover' => [ 'unit' => 'px', 'size' => 0,  'sizes' => [] ],
+'_transform_translateY_effect_hover' => [ 'unit' => 'px', 'size' => -1, 'sizes' => [] ],
+'_transform_transition_hover'        => [ 'unit' => 'px', 'size' => 200, 'sizes' => [] ], // durée en MS malgré unit px
+
+// 2. Bordure au survol
+'_border_hover_border' => 'solid',
+'_border_hover_width'  => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
+'_border_hover_color'  => '#20C4C3',
+'__globals__'          => [ '_border_hover_color' => '' ], // vide le global éventuel qui écraserait la couleur locale
+
+// 3. Ombre portée au survol
+'_box_shadow_hover_box_shadow_type' => 'yes',   // activateur
+'_box_shadow_hover_box_shadow'      => [ 'horizontal' => 0, 'vertical' => 0, 'blur' => 70, 'spread' => -23, 'color' => 'rgba(32,196,195,0.22)' ],
+```
+
+Pièges : chaque mécanisme a son **activateur** (`_popover_hover => 'transform'`,
+`_box_shadow_type => 'yes'`, `_border_hover_border => 'solid'`) sans lequel rien n'est rendu ;
+la durée de transition transform s'exprime en millisecondes bien que `unit` soit `px` ;
+poser aussi l'activateur transform de l'état normal pour une transition aller-retour fluide.
+
+## Modifier une page existante sans l'écraser
+
+Ne JAMAIS regénérer entièrement une page qui a pu être retouchée à la main dans
+l'éditeur : décoder le `_elementor_data` existant, parcourir récursivement les
+`elements`, cibler les widgets par `widgetType` + un champ discriminant
+(`text`, `title_text`…), fusionner les settings (`array_merge`), ré-encoder, sauver,
+purger le cache. Toujours faire une sauvegarde BDD avant.
+
 ## Sauvegarde (obligatoire dans cet ordre)
 
 ```php
