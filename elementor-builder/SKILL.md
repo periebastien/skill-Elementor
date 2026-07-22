@@ -45,9 +45,7 @@ script PHP exécuté par `wp eval-file`. Règle d'or : **widgets natifs d'abord*
    (+ `_offset_orientation_h => 'end'` pour ancrer à droite).
 7. **Dimensions** : `['unit'=>'px','top'=>..,'right'=>..,'bottom'=>..,'left'=>..,'isLinked'=>false]`.
 8. **Icônes SVG** : `selected_icon => ['value' => ['id'=>ID,'url'=>URL], 'library'=>'svg']`
-   avec l'ID d'attachment WordPress d'un SVG déjà importé en médiathèque (`wp media import`).
-   Pour une icône de la bibliothèque Font Awesome fournie par Elementor :
-   `selected_icon => ['value' => 'fas fa-arrow-right', 'library' => 'fa-solid']`.
+   (les SVG du design system sont déjà en médiathèque, IDs 814-841, 887-898).
 9. **Heading** : `title` accepte du HTML inline (`<em>`), `header_size` = h1…h6,
    `title_color`, `align` ('left'|'center').
 10. **Button** : `text`, `link => ['url'=>..,'is_external'=>''], 'button_text_color',
@@ -71,6 +69,29 @@ Règle :
 'flex_gap' => [ 'column' => '0', 'row' => '0', 'unit' => 'px' ],   // flex
 'grid_gap' => [ 'column' => '20', 'row' => '20', 'unit' => 'px' ], // grid : reprendre le gap réel de la maquette
 ```
+
+## Éléments ronds (pastilles, avatars) : verrouiller largeur ET hauteur
+
+`border-radius: 50%` ne donne un cercle que si largeur == hauteur. Un widget avec
+largeur fixe (`_element_custom_width`) mais hauteur automatique devient une **ellipse**.
+Pour un cercle de N px sur un heading/texte : soit fixer aussi la hauteur, soit calculer
+le padding vertical → `padding_v = (N - hauteur_texte - bordure_totale) / 2`
+(ex. cercle 56, texte 18px line-height 1, bordure 2+2 : `(56 - 18 - 4) / 2 = 17px`).
+
+## Positionner un pseudo-élément par offset px : gare au padding par défaut (10px)
+
+Les conteneurs Elementor (`.e-con`) ont un **padding par défaut de 10px sur les 4 côtés**
+(`--container-default-padding-*`). Un `::after` positionné en absolu se réfère à la
+**padding-box** du conteneur relatif : `top:0` = bord intérieur de la bordure, mais les
+enfants en flux normal commencent APRÈS le padding-top. Donc un offset `top` calculé
+« au centre du premier enfant » est faux de la valeur du padding-top (souvent 10px) si on
+ne la neutralise pas.
+
+Règle pour une ligne/connecteur centré sur un élément :
+`top = padding-top du conteneur + (hauteur de l'élément cible / 2)`.
+Le plus simple et déterministe : **forcer explicitement le padding-bloc du conteneur à 0**
+(clé `padding`), puis `top = hauteur_cible / 2`. Sinon, prévoir toujours l'offset du
+padding par défaut. Toujours vérifier dans le CSS généré (`--padding-top`) après coup.
 
 ## Classes CSS personnalisées et niveaux de CSS
 
@@ -150,15 +171,10 @@ update_post_meta( $id, '_wp_page_template', 'elementor_header_footer' ); // ou '
 - `curl -sk <url> | grep` un texte attendu + vérifier qu'aucun widget ne rend vide
 - Ouvrir la page dans l'éditeur Elementor : si le JSON est invalide, l'éditeur affiche une page blanche — c'est le signal d'un settings mal formé.
 
-## Tokens design (à adapter par projet)
+## Design system Altitude Révision (tokens)
 
-Renseigner ici les couleurs, la police et les rayons/espacements du design system du
-projet en cours (souvent disponibles dans un fichier `colors_and_type.css` ou équivalent
-si le projet vient de Claude Design), pour que les widgets générés reprennent les bonnes
-valeurs sans avoir à les redemander à chaque page. Exemple de structure :
-
-- Couleurs primaire/accent/CTA (+ variantes hover)
-- Couleur d'encre (texte principal) et texte secondaire/muted
-- Police(s) et graisses disponibles
-- Rayons de bordure et espacements de section standards
-- Largeur max de conteneur (`content_width`)
+Jaune CTA `#ffbd20` (hover `#e0a800`) · Teal `#20c4c3` (dark `#189998`, light `#d0f4f4`)
+· Encre `#1a1a1a`/`#292728` · Texte secondaire `#555`/`#666` · Police **Nunito**
+(400-900) · Radius 8-20px · Sections py 96px · max-width 1280px.
+Référence complète : projet Claude Design "Altitude Révision Design System",
+fichier `colors_and_type.css`.
