@@ -93,6 +93,29 @@ Le plus simple et déterministe : **forcer explicitement le padding-bloc du cont
 (clé `padding`), puis `top = hauteur_cible / 2`. Sinon, prévoir toujours l'offset du
 padding par défaut. Toujours vérifier dans le CSS généré (`--padding-top`) après coup.
 
+## Colonnes flex : largeur EXPLICITE en %, jamais en px ni « auto »
+
+Un conteneur imbriqué dans un conteneur flex **retombe en largeur 100 % par défaut** et
+s'empile verticalement au lieu de se placer en rangée. Toujours donner à chaque colonne
+une largeur **explicite en pourcentage** (jamais en px : le px ne s'adapte pas et casse
+la rangée). Pour N colonnes égales → `100/N %` chacune ; ajuster librement si une colonne
+doit être plus large (ex. 31 / 23 / 23 / 23 pour un bloc marque + 3 colonnes de liens).
+
+Règles :
+- Largeurs desktop qui **somment à 100 %** et `flex_gap` colonne = **0** (le pourcentage
+  fait tout le travail). Mixer % + gap px fixe fait déborder et enrouler la rangée.
+- Toujours prévoir le responsive : `width_tablet` (souvent 50 %) et `width_mobile` (100 %),
+  + `flex_gap` ligne (ex. 40px) pour l'espacement vertical une fois enroulé.
+- L'espacement horizontal vient de la largeur du contenu plus étroite que la colonne, ou
+  d'un padding interne (border-box : le padding reste dans le %). Vérifier `--width` dans
+  le CSS généré après coup.
+
+```php
+'width'        => [ 'unit' => '%', 'size' => 23 ],
+'width_tablet' => [ 'unit' => '%', 'size' => 50 ],
+'width_mobile' => [ 'unit' => '%', 'size' => 100 ],
+```
+
 ## Classes CSS personnalisées et niveaux de CSS
 
 - **Classe sur un widget** : clé `_css_classes` (AVEC underscore) — champ Avancé →
