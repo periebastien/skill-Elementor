@@ -54,6 +54,48 @@ script PHP exécuté par `wp eval-file`. Règle d'or : **widgets natifs d'abord*
     `background_color` (+ activateur non requis pour button), `border_radius`,
     `text_padding`, hover : `button_background_hover_color`.
 
+## Espacements : TOUJOURS définir les gaps explicitement
+
+Un conteneur flex ou grid sans `flex_gap`/`grid_gap` hérite du défaut Elementor
+(20px colonnes / 20px lignes), ce qui fausse silencieusement la fidélité à la maquette.
+Règle :
+
+- **Toujours** poser `flex_gap` (flex) ou `grid_gap` (grid) sur chaque conteneur créé,
+  même quand la valeur voulue est zéro.
+- Par défaut, mettre le gap à **0/0** et contrôler les espacements par des **marges sur
+  les widgets** (`_margin`), qui traduisent directement les valeurs de la maquette
+  (ex. `margin-bottom: 20px` sous un titre). Le gap uniforme ne convient que quand la
+  maquette espace réellement tous les enfants de la même valeur (grilles de cartes).
+
+```php
+'flex_gap' => [ 'column' => '0', 'row' => '0', 'unit' => 'px' ],   // flex
+'grid_gap' => [ 'column' => '20', 'row' => '20', 'unit' => 'px' ], // grid : reprendre le gap réel de la maquette
+```
+
+## Classes CSS personnalisées et niveaux de CSS
+
+- **Classe sur un widget** : clé `_css_classes` (AVEC underscore) — champ Avancé →
+  Classes CSS de l'éditeur. Sur un **conteneur** : clé `css_classes` (SANS underscore).
+  Méthode privilégiée pour créer des composants réutilisables : poser une classe sur le
+  widget porteur (ex. la pastille d'un stepper) et styler via CSS global.
+- **Trois niveaux de CSS personnalisé** (Elementor Pro) :
+  1. **Élément** : settings `custom_css` (mot-clé `selector`) — portée : cet élément seul.
+  2. **Page** : `_elementor_page_settings['custom_css']` de la page — portée : la page.
+  3. **Site** : `_elementor_page_settings['custom_css']` du **kit actif**
+     (`wp option get elementor_active_kit`) — portée : tout le site. À privilégier pour les
+     classes réutilisables ; baliser chaque bloc d'un commentaire marqueur pour pouvoir le
+     remplacer par script sans écraser le reste.
+- **Pseudo-éléments** (`::before`/`::after`) : impossibles via les réglages natifs → CSS
+  personnalisé. Pour styler le parent d'un widget porteur de classe : `:has()`
+  (ex. `.e-con:has(> .elementor-widget-heading.ma-classe)::after{...}`).
+
+## ⚠️ Éditeur Elementor ouvert = patchs perdus
+
+Si l'utilisateur a l'éditeur Elementor ouvert sur la page pendant un patch en base,
+sa prochaine sauvegarde réécrit tout le `_elementor_data` avec l'état chargé AVANT le
+patch : les modifications sont silencieusement perdues. Toujours demander la fermeture
+de l'éditeur avant de patcher, et revérifier les clés après coup si un doute existe.
+
 ## Effets au survol (hover) — onglet Avancé, applicables à quasi tous les widgets
 
 Clés vérifiées en inspectant le JSON produit par l'éditeur Elementor (préfixe `_`,
