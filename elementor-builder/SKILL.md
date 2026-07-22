@@ -154,6 +154,22 @@ l'éditeur : décoder le `_elementor_data` existant, parcourir récursivement le
 (`text`, `title_text`…), fusionner les settings (`array_merge`), ré-encoder, sauver,
 purger le cache. Toujours faire une sauvegarde BDD avant.
 
+## Theme Builder (header/footer) : conditions d'affichage
+
+- Template Elementor Pro : `_elementor_template_type` = `header`/`footer`, condition dans
+  `_elementor_conditions` (tableau de chaînes : `include/general`, `include/singular/page/{id}`,
+  `exclude/singular/page/{id}`…).
+- **Ne pas se fier au départage automatique** entre un `include/general` et un `include`
+  plus spécifique : pour garantir qu'un template spécifique (ex. footer d'une section)
+  reste seul sur sa cible, ajouter un **`exclude` explicite** sur le template général,
+  miroir de la condition du template spécifique
+  (`[ 'include/general', 'exclude/singular/page/14' ]`).
+- Après modif : régénérer le cache
+  `\ElementorPro\Plugin::instance()->modules_manager->get_modules('theme-builder')->get_conditions_manager()->get_cache()->regenerate();`
+  puis vider le cache fichiers.
+- **Vérifier** via l'option `elementor_pro_theme_builder_conditions` (map location→template→conditions),
+  PAS via `is_page()` en WP-CLI (le contexte frontend n'existe pas en CLI, la résolution runtime est faussée).
+
 ## Sauvegarde (obligatoire dans cet ordre)
 
 ```php
