@@ -1,0 +1,9 @@
+# `woocommerce-product-add-to-cart` — Ajouter au panier (Pro)
+
+`x`+GROUPE = groupe de contrôles (sous-clés dans common-controls.md). Suffixes responsive `_tablet`/`_mobile` dispo sur les contrôles responsive.
+
+## onglet style
+- section_layout : `layout`(|stacked|auto)
+- section_atc_button_style : `button_typography_typography`+GROUPE typo, `button_border_border`+GROUPE bordure, `view_cart_typography_typography`+GROUPE typo, `alignment`(left|center|right|justify), `button_border_radius`:dim{t,r,b,l,unit,isLinked}, `button_padding`:dim{t,r,b,l,unit,isLinked}, `button_style_tabs`, `button_text_color`:color, `button_bg_color`:color, `button_text_color_hover`:color, `button_bg_color_hover`:color, `button_border_color_hover`:color, `button_transition`:slider{unit,size}, `view_cart_color`:color, `view_cart_spacing`:slider{unit,size}
+- section_atc_quantity_style : `quantity_typography_typography`+GROUPE typo, `quantity_border_border`+GROUPE bordure, `show_quantity`:'yes'[=yes], `spacing`:slider{unit,size}, `quantity_border_radius`:dim{t,r,b,l,unit,isLinked}, `quantity_padding`:dim{t,r,b,l,unit,isLinked}, `quantity_style_tabs`, `quantity_text_color`:color, `quantity_bg_color`:color, `quantity_text_color_focus`:color, `quantity_bg_color_focus`:color, `quantity_border_color_focus`:color, `quantity_transition`:slider{unit,size}
+- section_atc_variations_style : `variations_label_typography_typography`+GROUPE typo, `variations_select_typography_typography`+GROUPE typo, `variations_width`:slider{unit,size}, `variations_spacing`:slider{unit,size}, `variations_space_between`:slider{unit,size}, `variations_label_color_focus`:color, `variations_select_color`:color, `variations_select_bg_color`:color, `variations_select_border_color`:color, `variations_select_border_radius`:slider{unit,size}

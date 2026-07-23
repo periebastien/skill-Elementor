@@ -1,0 +1,10 @@
+# `theme-site-logo` — Logo du site (Pro)
+
+`x`+GROUPE = groupe de contrôles (sous-clés dans common-controls.md). Suffixes responsive `_tablet`/`_mobile` dispo sur les contrôles responsive.
+
+## onglet content
+- section_image : `image`, `image_size`(thumbnail|medium|medium_large|large|1536x1536|2048x2048|woocommerce_thumbnail|woocommerce_single|woocommerce_gallery_thumbnail|full|…)[=full], `image_custom_dimension`, `caption_source`(none|attachment)[=none], `link_to`(none|file|custom|site_url)[=site_url], `link`:url{url,is_external}, `open_lightbox`(default|yes|no)[=default]
+
+## onglet style
+- section_style_image : `image_border_border`+GROUPE bordure, `align`(start|center|end), `width`:slider{unit,size}, `space`:slider{unit,size}, `height`:slider{unit,size}, `object-fit`(|fill|cover|contain|scale-down), `object-position`(center center|center left|center right|top center|top left|top right|bottom center|bottom left|bottom right)[=center center], `image_effects`, `opacity`:slider{unit,size}, `css_filters_css_filter`, `css_filters_blur`:slider{unit,size}, `css_filters_brightness`:slider{unit,size}, `css_filters_contrast`:slider{unit,size}, `css_filters_saturate`:slider{unit,size}, `css_filters_hue`:slider{unit,size}, `opacity_hover`:slider{unit,size}, `css_filters_hover_css_filter`, `css_filters_hover_blur`:slider{unit,size}, `css_filters_hover_brightness`:slider{unit,size}, `css_filters_hover_contrast`:slider{unit,size}, `css_filters_hover_saturate`:slider{unit,size}, `css_filters_hover_hue`:slider{unit,size}, `background_hover_transition`:slider{unit,size}, `hover_animation`, `image_border_radius`:dim{t,r,b,l,unit,isLinked}, `image_box_shadow_box_shadow_type`, `image_box_shadow_box_shadow`:box_shadow
+- section_style_caption : `caption_typography_typography`+GROUPE typo, `caption_align`(start|center|end|justify), `text_color`:color, `caption_background_color`:color, `caption_text_shadow_text_shadow_type`, `caption_text_shadow_text_shadow`:text_shadow, `caption_space`:slider{unit,size}

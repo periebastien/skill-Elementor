@@ -1,0 +1,15 @@
+# Index des widgets Elementor / Elementor Pro (généré depuis Elementor 4.2.0 / Pro 4.2.0)
+
+Détail des contrôles d'un widget : `references/widgets/<nom>.md`. Charger UNIQUEMENT les
+fichiers des widgets qu'on s'apprête à utiliser. Formats de valeurs et contrôles communs
+(onglet Avancé `_*`, responsive, groupes background/typo/border) : `references/common-controls.md`.
+
+## Elementor (gratuit) (35)
+`accordion`, `alert`, `audio`, `button`, `contact-buttons`, `counter`, `divider`, `google_maps`, `heading`, `html`, `icon`, `icon-box`, `icon-list`, `image`, `image-box`, `image-carousel`, `image-gallery`, `link-in-bio`, `menu-anchor`, `nested-accordion`, `nested-tabs`, `progress`, `rating`, `read-more`, `shortcode`, `sidebar`, `social-icons`, `spacer`, `star-rating`, `tabs`, `testimonial`, `text-editor`, `text-path`, `toggle`, `video`
+
+## Elementor Pro (81)
+`animated-headline`, `archive-posts`, `author-box`, `blockquote`, `call-to-action`, `code-highlight`, `countdown`, `facebook-button`, `facebook-comments`, `facebook-embed`, `facebook-page`, `flip-box`, `form`, `gallery`, `hotspot`, `login`, `loop-carousel`, `loop-grid`, `lottie`, `media-carousel`, `mega-menu`, `nav-menu`, `nested-carousel`, `off-canvas`, `paypal-button`, `portfolio`, `post-comments`, `post-info`, `post-navigation`, `posts`, `price-list`, `price-table`, `progress-tracker`, `reviews`, `search`, `search-form`, `share-buttons`, `sitemap`, `slides`, `stripe-button`, `table-of-contents`, `taxonomy-filter`, `testimonial-carousel`, `theme-archive-title`, `theme-page-title`, `theme-post-content`, `theme-post-excerpt`, `theme-post-featured-image`, `theme-post-title`, `theme-site-logo`, `theme-site-title`, `video-playlist`, `wc-add-to-cart`, `wc-archive-products`, `wc-categories`, `wc-elements`, `wc-products`, `wc-single-elements`, `woocommerce-archive-description`, `woocommerce-archive-products`, `woocommerce-breadcrumb`, `woocommerce-cart`, `woocommerce-checkout-page`, `woocommerce-menu-cart`, `woocommerce-my-account`, `woocommerce-notices`, `woocommerce-product-add-to-cart`, `woocommerce-product-additional-information`, `woocommerce-product-content`, `woocommerce-product-data-tabs`, `woocommerce-product-images`, `woocommerce-product-meta`, `woocommerce-product-price`, `woocommerce-product-rating`, `woocommerce-product-related`, `woocommerce-product-short-description`, `woocommerce-product-stock`, `woocommerce-product-title`, `woocommerce-product-upsell`, `woocommerce-products`, `woocommerce-purchase-summary`
+
+Variantes de `contact-buttons` (mêmes contrôles, layout différent) : `contact-buttons-var-1`, `contact-buttons-var-10`, `contact-buttons-var-3`, `contact-buttons-var-4`, `contact-buttons-var-5`, `contact-buttons-var-6`, `contact-buttons-var-7`, `contact-buttons-var-8`, `contact-buttons-var-9`
+Variantes de `floating-bars` (mêmes contrôles, layout différent) : `floating-bars-var-1`, `floating-bars-var-2`, `floating-bars-var-3`
+Variantes de `link-in-bio` (mêmes contrôles, layout différent) : `link-in-bio-var-2`, `link-in-bio-var-3`, `link-in-bio-var-4`, `link-in-bio-var-5`, `link-in-bio-var-6`, `link-in-bio-var-7`

@@ -1,0 +1,11 @@
+# `image-box` — Boîte d’image (core)
+
+`x`+GROUPE = groupe de contrôles (sous-clés dans common-controls.md). Suffixes responsive `_tablet`/`_mobile` dispo sur les contrôles responsive.
+
+## onglet content
+- section_image : `image`:media{id,url}, `thumbnail_size`(thumbnail|medium|medium_large|large|1536x1536|2048x2048|woocommerce_thumbnail|woocommerce_single|woocommerce_gallery_thumbnail|full|…)[=full], `thumbnail_custom_dimension`, `title_text`:txt, `description_text`:txt, `link`:url{url,is_external}, `title_size`(h1|h2|h3|h4|h5|h6|div|span|p)[=h3]
+
+## onglet style
+- section_style_box : `position`(left|top|right)[=top], `content_vertical_alignment`(top|middle|bottom)[=top], `text_align`(start|center|end|justify), `image_space`:slider{unit,size}, `title_bottom_space`:slider{unit,size}
+- section_style_image : `image_border_border`+GROUPE bordure, `image_box_shadow_box_shadow_type`+GROUPE box_shadow, `image_size`:slider{unit,size}, `image_height`:slider{unit,size}, `image_object_fit`(|fill|cover|contain|scale-down), `image_object_position`(center center|center left|center right|top center|top left|top right|bottom center|bottom left|bottom right)[=center center], `image_border_radius`:slider{unit,size}, `image_effects`, `css_filters_css_filter`, `css_filters_blur`:slider{unit,size}, `css_filters_brightness`:slider{unit,size}, `css_filters_contrast`:slider{unit,size}, `css_filters_saturate`:slider{unit,size}, `css_filters_hue`:slider{unit,size}, `image_opacity`:slider{unit,size}, `css_filters_hover_css_filter`, `css_filters_hover_blur`:slider{unit,size}, `css_filters_hover_brightness`:slider{unit,size}, `css_filters_hover_contrast`:slider{unit,size}, `css_filters_hover_saturate`:slider{unit,size}, `css_filters_hover_hue`:slider{unit,size}, `image_opacity_hover`:slider{unit,size}, `background_hover_transition`:slider{unit,size}, `hover_animation`
+- section_style_content : `title_typography_typography`+GROUPE typo, `title_stroke_text_stroke_type`+GROUPE text_stroke, `description_typography_typography`+GROUPE typo, `title_shadow_text_shadow_type`, `title_shadow_text_shadow`:text_shadow, `image_box_title_colors`, `title_color`:color, `hover_title_color`:color, `hover_title_color_transition_duration`:slider{unit,size}, `description_shadow_text_shadow_type`, `description_shadow_text_shadow`:text_shadow, `description_color`:color

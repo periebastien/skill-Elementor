@@ -27,6 +27,25 @@ micro-détail impossible nativement.
    médias déjà en médiathèque depuis les sources du projet — les noter dans le contexte
    du projet (CLAUDE.md / mémoire), pas dans cette skill.
 
+## Référentiel des widgets et de leurs contrôles (dossier `references/`)
+
+Une clé de settings inconnue est **ignorée en silence** par Elementor — ne jamais deviner
+un nom de contrôle. Consulter, dans cet ordre et **à la demande seulement** (ne pas tout
+charger) :
+
+1. `references/widgets-index.md` — liste 1-ligne de tous les widgets core + Pro : choisir
+   le bon `widgetType`.
+2. `references/widgets/<nom>.md` — contrôles spécifiques du widget qu'on va utiliser
+   (onglets content/style, options des selects, défauts). Charger uniquement ceux-là.
+3. `references/common-controls.md` — formats de valeurs (slider, dimensions, media, icons…),
+   groupes de contrôles (typo, bordure, background, ombres : activateur + sous-clés) et
+   onglet Avancé `_*` communs à tous les widgets.
+
+Ces fichiers sont générés depuis Elementor 4.2.0 / Pro 4.2.0. Sur un site avec une autre
+version, ils restent une bonne approximation ; pour les régénérer exactement :
+`wp eval-file tools/extract-widgets.php /tmp/dump.json` puis
+`python3 tools/generate-widget-refs.py /tmp/dump.json references/ <version>`.
+
 ## Structure des éléments
 
 ```php
