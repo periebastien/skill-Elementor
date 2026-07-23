@@ -246,54 +246,133 @@ Le `curl`+grep valide le contenu, jamais le rendu. Après chaque build/patch vis
   les réserve aux overlays de fond (dimensionnés 100 %×100 %) — un badge posé là devient
   une ellipse géante. Poser le pseudo-élément sur un **widget** enfant (ou son contenu),
   jamais sur le conteneur.
-- **Grille JetEngine : le gap se règle dans le WIDGET** (`horizontal_gap`/`vertical_gap`),
-  jamais par un `gap` CSS sur `.jet-listing-grid__items` : JetEngine calcule des largeurs
-  d'items en % sans connaître ce gap → les colonnes replient (3 colonnes deviennent 2).
-- **Widgets dynamic-field JetEngine = `display:flex; align-items:center`** par défaut :
-  dans une carte à hauteur égalisée, le contenu paraît centré verticalement. Forcer
-  `align-items:flex-start` sur le widget (via sa classe custom). En mode « optimized
-  DOM », la classe `jet-listing-dynamic-field` n'est PAS sur l'élément (seulement
-  `jet-listing-dynamic-field-optimized-dom`) — cibler sa classe custom, pas la classe du plugin.
 - **Bouton en bas de carte** : `flex-grow:1` sur le widget central (sélecteur
   `.ma-carte > .ma-liste` avec `!important` si le thème/plugin fixe `flex-grow:0`).
-- **Lien dynamique JetEngine avec paramètre** (`jet-listing-dynamic-link`) :
-  `add_query_args => 'yes'` + `query_args => "cle=%current_id%"` (macros supportées,
-  une par ligne) ; pour une URL statique de destination, `dynamic_link_source_custom`
-  vers une meta inexistante + `url_prefix => '/ma-page/'`.
+- (Les pièges propres à JetEngine — gap de grille, flex centré des dynamic-fields,
+  liens à paramètres — sont dans la SECTION JETENGINE.)
 - **Widgets stylés dans l'éditeur par l'utilisateur** : re-lire `_elementor_data` avant
   tout nouveau patch (il a pu changer depuis le dernier build) et patcher
   chirurgicalement le JSON existant, jamais regénérer.
 
-## JetEngine : listing grid + composant listing (contenu dynamique dans Elementor)
+# ── SECTION JETENGINE (Crocoblock) ─────────────────────────────────
 
-Pour une grille de contenus dynamiques (produits, CPT, CCT), le couple JetEngine =
-**Listing** (template d'un item, CPT `jet-engine`) + widget **`jet-listing-grid`** posé
-dans la page, alimenté par une **Query** du Query Builder.
+Tout ce qui touche aux contenus dynamiques JetEngine dans Elementor. Chaîne complète :
+**Query (Query Builder) → Composant Listing (template d'un item) → widget
+`jet-listing-grid` (posé dans la page, référence les deux)**.
 
-- **Listing** : post `jet-engine` avec `_elementor_data` (structure Elementor normale) +
-  metas `_listing_data` / `_elementor_page_settings` (`listing_source` = `posts|query|...`,
-  `_query_id` = ID de la query). Le construire par script comme n'importe quelle page.
-- **Widget grille** (dans la page) : `widgetType => 'jet-listing-grid'`, settings clés :
-  `lisitng_id` (SIC — la faute de frappe est dans JetEngine, ne pas « corriger »),
-  `columns` / `columns_tablet` / `columns_mobile`, `equal_columns_height => 'yes'`,
-  `not_found_message`. Le tri/filtre vit dans la **query**, pas dans le widget.
-- **Query Builder** : inspecter par script via
-  `\Jet_Engine\Query_Builder\Manager::instance()->get_queries()` (ou `get_query_by_id($id)`,
-  propriété `->query` = args WP_Query). Les queries ne sont PAS des posts.
-- **Widget `jet-listing-dynamic-field`** (dans le listing) :
-  `dynamic_field_source => 'object'` + `dynamic_field_post_object => 'post_title'|'post_content'|...` ;
-  pour une meta, ajouter `dynamic_field_post_meta_custom => 'ma_meta'` (prioritaire sur
-  `post_object`) ; `dynamic_field_format => '%s €'` (sprintf). `post_content` passe par
-  `the_content` → un `<ul>` saisi dans la description d'un produit ressort en vrai `<ul>`
-  stylable en CSS.
-- **Markup rendu** : chaque item = `.jet-listing-grid__item` ; champ =
-  `.jet-listing-dynamic-field__content` (présent même en mode « optimized DOM »).
-  Le gap de la grille se contrôle en CSS : `.jet-listing-grid__items { gap: 22px; }`.
+## Query Builder : inspecter ET créer des queries par script
+
+Les queries ne sont PAS des posts. Stockage : table **`{prefix}jet_post_types`** avec
+`status = 'query'` ; colonnes `labels` (serialize `['name' => '...']`) et `args`
+(serialize de toute la config, clé `query_type` = `posts|sql|terms|...` + un sous-tableau
+du même nom contenant les args type WP_Query).
+
+- **Inspecter** : `\Jet_Engine\Query_Builder\Manager::instance()->get_queries()` /
+  `get_query_by_id( $id )` → propriété `->query` = args (post_type, tax_query, orderby…).
+- **Créer en autopilote** : le plus fiable est de partir d'une query existante du même
+  `query_type` — lire sa ligne, désérialiser `args`, modifier (tax_query/terms, orderby,
+  post_type…), réinsérer :
+
+```php
+global $wpdb;
+$t   = $wpdb->prefix . 'jet_post_types';
+$src = $wpdb->get_row( "SELECT * FROM $t WHERE id = 3", ARRAY_A ); // modèle
+$args = maybe_unserialize( $src['args'] );
+$args['posts']['tax_query'][0]['terms'] = 21;      // nouvelle catégorie
+$wpdb->insert( $t, [
+	'slug' => '', 'status' => 'query',
+	'labels' => serialize( [ 'name' => 'Produits Réparations' ] ),
+	'args' => serialize( $args ), 'meta_fields' => '',
+] );
+echo $wpdb->insert_id; // = _query_id à référencer dans le listing
+```
+
+  ⚠️ Le Manager enregistre les queries au bootstrap : une query insérée n'est **pas
+  visible dans le même process PHP** (`get_query_by_id` renvoie false). Vérifier dans un
+  **nouveau** `wp eval` : `get_query_by_id( $new_id )->get_items()` doit retourner les
+  items (testé : copie de query + tax modifiée → items OK au process suivant).
+- Le tri/filtre vit dans la **query**, jamais dans le widget grille.
+
+## Composant Listing (template d'un item) : créer par script
+
+Post type **`jet-engine`**, `post_status publish`, avec ces metas (relevées sur un
+composant réel) :
+
+```php
+$listing_id = wp_insert_post( [ 'post_type' => 'jet-engine', 'post_status' => 'publish',
+	'post_title' => 'Carte produit X' ] );
+update_post_meta( $listing_id, '_entry_type',   'listing' );
+update_post_meta( $listing_id, '_listing_type', 'elementor' );
+update_post_meta( $listing_id, '_listing_data', [ 'source' => 'query',
+	'post_type' => 'post', 'tax' => 'category' ] );
+update_post_meta( $listing_id, '_query_id', (string) $query_id );
+update_post_meta( $listing_id, '_elementor_page_settings', [
+	'listing_source' => 'query', 'listing_post_type' => 'post',
+	'listing_tax' => 'category', '_query_id' => (string) $query_id ] );
+update_post_meta( $listing_id, '_elementor_template_type', 'jet-listing-items' );
+update_post_meta( $listing_id, '_wp_page_template', 'default' );
+// puis _elementor_data comme n'importe quelle page (conteneur racine = la carte),
+// + _elementor_edit_mode 'builder' + _elementor_version + clear_cache()
+```
+
+## Widget `jet-listing-grid` (dans la page)
+
+- `lisitng_id` (SIC — la faute de frappe est dans JetEngine, ne pas « corriger ») = ID
+  du composant listing.
+- `columns` / `columns_tablet` / `columns_mobile` (les 3 explicitement),
+  `equal_columns_height => 'yes'`, `not_found_message`.
+- **Gap : OBLIGATOIREMENT via le widget** — `horizontal_gap` / `vertical_gap`
+  (`['unit'=>'px','size'=>22,'sizes'=>[]]`). JAMAIS un `gap` CSS sur
+  `.jet-listing-grid__items` : JetEngine calcule les largeurs d'items en % sans le
+  connaître → les colonnes replient (3 deviennent 2).
+- Vérifier au `curl` : les settings réellement appliqués sont sérialisés dans l'attribut
+  `data-nav` du markup.
+
+## Widget `jet-listing-dynamic-field` (dans le listing)
+
+- `dynamic_field_source => 'object'` + `dynamic_field_post_object =>
+  'post_title'|'post_content'|'post_excerpt'|...` ; produits WooCommerce : les méthodes
+  `get_description`, `get_price_html`… fonctionnent aussi comme valeur de `post_object`.
+- Meta : ajouter `dynamic_field_post_meta_custom => 'ma_meta'` (prioritaire sur
+  `post_object`).
+- `dynamic_field_format => '%s €'` (sprintf).
+- `post_content` passe par `the_content` → un `<ul>` saisi dans la description d'un
+  produit ressort en vrai `<ul>` stylable en CSS. Harmoniser les descriptions des items
+  (toutes en liste) pour des cartes homogènes.
+- **Rendu = `display:flex; align-items:center` par défaut** : dans une carte à hauteur
+  égalisée le contenu paraît centré verticalement — forcer `align-items:flex-start` via
+  la classe custom du widget. En mode « optimized DOM », la classe
+  `jet-listing-dynamic-field` n'est PAS posée sur l'élément (seulement
+  `jet-listing-dynamic-field-optimized-dom`) : cibler la classe custom (`_css_classes`),
+  pas la classe du plugin. Le conteneur interne `.jet-listing-dynamic-field__content`
+  existe dans tous les modes.
+
+## Widget `jet-listing-dynamic-link` (bouton/lien par item)
+
+Pour un lien portant un paramètre par item (ex. `/demande/?svc=<ID>`):
+
+```php
+[ 'widgetType' => 'jet-listing-dynamic-link', 'settings' => [
+	'link_label' => 'Commander',
+	'dynamic_link_source_custom' => 'meta_inexistante', // → URL vide
+	'url_prefix' => '/demande-intervention/',           // la base statique
+	'add_query_args' => 'yes',
+	'query_args' => 'svc=%current_id%',                 // macros OK, une par ligne
+] ]
+```
+
+Markup rendu : `.jet-listing-dynamic-link__link` (styler celui-là, pas le wrapper).
+
+## Markup, ciblage CSS et variantes
+
+- Chaque item = `.jet-listing-grid__item` ; l'arbre Elementor du listing est rendu
+  dedans (`> .elementor` — lui donner `height:100%` pour les cartes pleine hauteur).
 - **Variante « mise en avant »** d'une carte : si l'ordre de la query est déterministe
-  (tri par meta), cibler `.jet-listing-grid__item:nth-child(N)` en CSS (bordure, badge en
-  `::before` sur la carte flex). Documenter la dépendance à l'ordre.
-- Vérifier le rendu au `curl` : les settings du widget grille sont sérialisés dans
-  `data-nav` — utile pour confirmer `columns`/`posts_num` réellement appliqués.
+  (tri par meta), cibler `.jet-listing-grid__item:nth-child(N)` en CSS. Poser le badge
+  en `::before` sur un **widget** de la carte (pas sur le conteneur — voir pièges
+  Elementor). Documenter la dépendance à l'ordre de la query.
+
+# ── FIN SECTION JETENGINE ──────────────────────────────────────────
 
 ## Accordéon natif Elementor (`nested-accordion`) — FAQ
 
