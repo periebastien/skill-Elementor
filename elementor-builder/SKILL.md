@@ -71,6 +71,16 @@ version, ils restent une bonne approximation ; pour les régénérer exactement 
 4. **Grid** : `container_type => 'grid'`, `grid_columns_grid => ['unit'=>'fr','size'=>4]`,
    `grid_gap => ['column'=>'20','row'=>'20','unit'=>'px']`, responsive via suffixes
    `_tablet` / `_mobile` (ex. `grid_columns_grid_tablet`).
+   ⚠️ **Les rangées valent `repeat(2,1fr)` par défaut** (`--e-con-grid-template-rows` dans le
+   CSS de base d'Elementor) : une grille d'une seule rangée logique rend une **2e rangée vide
+   de même hauteur** (gros blanc fantôme sous les cartes). TOUJOURS poser explicitement
+   `grid_rows_grid => ['unit'=>'fr','size'=>N]` (+ `grid_auto_flow => 'row'`).
+4bis. **Diagnostiquer le padding d'un conteneur** : la règle qui consomme les variables est
+   `.e-con-full, .e-con > .e-con-inner { padding-block-…: var(--padding-…) }`. Sur un
+   conteneur **boxed**, le padding s'applique donc à l'`e-con-inner`, PAS à l'élément
+   `.e-con` lui-même : `getComputedStyle` sur l'e-con boxed renvoie `padding: 0` alors que
+   tout est normal. Ne pas « corriger » ça ; si un blanc anormal apparaît, chercher d'abord
+   une rangée de grille vide (piège 4).
 5. **Typographie widget** : activer avec `typography_typography => 'custom'` puis
    `typography_font_family`, `typography_font_size => ['unit'=>'px','size'=>36]`,
    `typography_font_weight => '900'`, `typography_line_height`, `typography_letter_spacing`.
@@ -269,6 +279,11 @@ Le `curl`+grep valide le contenu, jamais le rendu. Après chaque build/patch vis
   `.ma-carte > .ma-liste` avec `!important` si le thème/plugin fixe `flex-grow:0`).
 - (Les pièges propres à JetEngine — gap de grille, flex centré des dynamic-fields,
   liens à paramètres — sont dans la SECTION JETENGINE.)
+- **Widget image = `<img>` étiré à 100 %** : avec `height` (slider) + `object-fit`, l'image
+  garde `width:100%` du widget → un logo `contain` flotte centré dans un grand rectangle
+  invisible (faux « décalage »). Pour un logo à hauteur fixe : CSS
+  `img { width:auto; height:Npx }` via la classe du widget (le contrôle `width` du widget
+  ne fait pas ça).
 - **Widgets stylés dans l'éditeur par l'utilisateur** : re-lire `_elementor_data` avant
   tout nouveau patch (il a pu changer depuis le dernier build) et patcher
   chirurgicalement le JSON existant, jamais regénérer.
