@@ -115,6 +115,29 @@ version, ils restent une bonne approximation ; pour les régénérer exactement 
       taille utilisée ; 1–2px à 14–15px). Vérifier par capture **zoomée** sur le bouton —
       le décalage est invisible sur une capture pleine page.
 
+## Liens d'ancre (`#section`) : vérifier les DEUX moitiés
+
+Un bouton qui pointe vers `#truc` casse silencieusement pour deux raisons distinctes —
+tester le parcours complet (clic → hash → défilement réel), jamais seulement le lien.
+
+1. **L'ancre doit exister** : poser `_element_id => 'truc'` sur le conteneur cible (champ
+   Avancé → ID CSS). Un `#truc` sans cible ne fait rien, sans erreur.
+2. **Dégagement sous un header collant** : `#truc { scroll-margin-top: <hauteur header + marge>; }`
+   dans le CSS global, sinon le titre se retrouve caché derrière le header.
+3. **⚠️ `html { scroll-behavior: smooth }` peut TUER la navigation par ancre.** Sur un site
+   chargé en écouteurs de défilement (Elementor + JetPlugins, widgets d'avis tiers…),
+   l'animation douce est interrompue dès son démarrage : le hash change dans l'URL mais la
+   page ne bouge pas d'un pixel. Ne jamais l'ajouter « pour faire joli » ; si une feuille
+   tierce l'impose, la neutraliser : `html { scroll-behavior: auto !important; }`.
+   Diagnostic express en console : comparer `location.hash='#x'` avec
+   `document.documentElement.style.scrollBehavior='auto'` puis à nouveau — si ça ne défile
+   qu'en `auto`, c'est ça.
+
+Vérification : `location.hash=''; el.dispatchEvent(new MouseEvent('click',{bubbles:true,
+cancelable:true,view:window}))` puis relever `window.scrollY` (≠ 0) et la position du
+titre par rapport à la hauteur du header. Un clic synthétique passe par les mêmes
+gestionnaires délégués que le clic réel.
+
 ## Espacements : TOUJOURS définir les gaps explicitement
 
 Un conteneur flex ou grid sans `flex_gap`/`grid_gap` hérite du défaut Elementor
