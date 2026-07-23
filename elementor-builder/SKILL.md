@@ -99,6 +99,21 @@ version, ils restent une bonne approximation ; pour les régénérer exactement 
 10. **Button** : `text`, `link => ['url'=>..,'is_external'=>''], 'button_text_color',
     `background_color` (+ activateur non requis pour button), `border_radius`,
     `text_padding`, hover : `button_background_hover_color`.
+    - **JAMAIS de caractère spécial en guise d'icône** dans `text` (`↓`, `→`, `✓`… = moche).
+      Toujours une vraie icône via `selected_icon` (+ `icon_align => 'row-reverse'` pour la
+      placer après le texte, `icon_indent` pour l'espacement). Si l'icône manque en
+      médiathèque : créer le SVG depuis les tracés de la maquette (wrapper
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+      stroke-linecap="round" stroke-linejoin="round">…</svg>` + `wp media import`) ; à défaut,
+      poser une icône de bibliothèque proche que l'utilisateur remplacera.
+    - **Alignement optique texte/icône** : l'icône SVG est centrée géométriquement, mais un
+      libellé **sans lettre descendante** (« Réserver mon contrôle ») paraît trop haut : la
+      boîte de ligne réserve l'espace du jambage sous la baseline. Toutes les boîtes ont beau
+      être parfaitement centrées au `getBoundingClientRect`, l'œil voit le texte plus haut que
+      l'icône. Correctif : classe sur le widget + CSS
+      `.ma-classe .elementor-button-text { transform: translateY(1.5px); }` (~ descente/2 à la
+      taille utilisée ; 1–2px à 14–15px). Vérifier par capture **zoomée** sur le bouton —
+      le décalage est invisible sur une capture pleine page.
 
 ## Espacements : TOUJOURS définir les gaps explicitement
 
