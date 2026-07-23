@@ -223,11 +223,46 @@ update_post_meta( $id, '_wp_page_template', 'elementor_header_footer' ); // ou '
 \Elementor\Plugin::$instance->files_manager->clear_cache(); // régénère le CSS
 ```
 
-## Vérification après build
+## Vérification après build : TOUJOURS contrôler visuellement
 
-- `wp post meta get <ID> _elementor_data | python3 -m json.tool > /dev/null` (JSON valide)
-- `curl -sk <url> | grep` un texte attendu + vérifier qu'aucun widget ne rend vide
-- Ouvrir la page dans l'éditeur Elementor : si le JSON est invalide, l'éditeur affiche une page blanche — c'est le signal d'un settings mal formé.
+Le `curl`+grep valide le contenu, jamais le rendu. Après chaque build/patch visuel :
+
+1. `wp post meta get <ID> _elementor_data | python3 -m json.tool > /dev/null` (JSON valide)
+2. `curl -sk <url> | grep` un texte attendu + vérifier qu'aucun widget ne rend vide
+3. **Prendre une capture d'écran** (outil navigateur) et la comparer à la maquette,
+   section par section. Les bugs de layout (colonnes qui replient, contenu centré au
+   lieu d'aligné, pseudo-éléments qui débordent) sont invisibles dans le HTML.
+4. En cas d'anomalie, **inspecter les styles calculés** via le navigateur
+   (`getComputedStyle`) sur l'élément fautif plutôt que de deviner : trouver quelle
+   règle gagne, puis corriger la bonne cible.
+5. Recharger en contournant le cache (le CSS du kit est versionné mais le navigateur
+   et le cache d'éléments Elementor peuvent servir l'ancien rendu).
+- Ouvrir la page dans l'éditeur Elementor : si le JSON est invalide, l'éditeur affiche
+  une page blanche — c'est le signal d'un settings mal formé.
+
+## Pièges de rendu vérifiés (source d'erreurs réelles)
+
+- **`::before`/`::after` sur un conteneur Elementor (`.e-con`) : INTERDIT.** Elementor
+  les réserve aux overlays de fond (dimensionnés 100 %×100 %) — un badge posé là devient
+  une ellipse géante. Poser le pseudo-élément sur un **widget** enfant (ou son contenu),
+  jamais sur le conteneur.
+- **Grille JetEngine : le gap se règle dans le WIDGET** (`horizontal_gap`/`vertical_gap`),
+  jamais par un `gap` CSS sur `.jet-listing-grid__items` : JetEngine calcule des largeurs
+  d'items en % sans connaître ce gap → les colonnes replient (3 colonnes deviennent 2).
+- **Widgets dynamic-field JetEngine = `display:flex; align-items:center`** par défaut :
+  dans une carte à hauteur égalisée, le contenu paraît centré verticalement. Forcer
+  `align-items:flex-start` sur le widget (via sa classe custom). En mode « optimized
+  DOM », la classe `jet-listing-dynamic-field` n'est PAS sur l'élément (seulement
+  `jet-listing-dynamic-field-optimized-dom`) — cibler sa classe custom, pas la classe du plugin.
+- **Bouton en bas de carte** : `flex-grow:1` sur le widget central (sélecteur
+  `.ma-carte > .ma-liste` avec `!important` si le thème/plugin fixe `flex-grow:0`).
+- **Lien dynamique JetEngine avec paramètre** (`jet-listing-dynamic-link`) :
+  `add_query_args => 'yes'` + `query_args => "cle=%current_id%"` (macros supportées,
+  une par ligne) ; pour une URL statique de destination, `dynamic_link_source_custom`
+  vers une meta inexistante + `url_prefix => '/ma-page/'`.
+- **Widgets stylés dans l'éditeur par l'utilisateur** : re-lire `_elementor_data` avant
+  tout nouveau patch (il a pu changer depuis le dernier build) et patcher
+  chirurgicalement le JSON existant, jamais regénérer.
 
 ## JetEngine : listing grid + composant listing (contenu dynamique dans Elementor)
 
