@@ -14,9 +14,17 @@ installer quoi que ce soit sur le site cible.
 
 ## Utilisation
 
-Copier le dossier `elementor-builder/` dans `.claude/skills/` à la racine de n'importe
-quel projet WordPress + Elementor (avec WP-CLI disponible), puis charger la skill
-`elementor-builder` avant de construire une page.
+Copier le dossier `elementor-builder/` :
+
+- soit dans `~/.claude/skills/` pour l'avoir **globalement**, sur tous les projets (recommandé) ;
+- soit dans `.claude/skills/` à la racine d'un projet WordPress + Elementor donné.
+
+Puis charger la skill `elementor-builder` avant de construire une page. WP-CLI doit être
+disponible sur le site cible.
+
+La skill est volontairement **générique** : elle ne contient aucune donnée propre à un
+projet (tokens de couleurs, IDs de médias ou de pages, chemins, identifiants d'accès).
+Ces éléments restent dans le contexte du projet concerné.
 
 ## Mise à jour
 

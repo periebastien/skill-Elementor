@@ -1,14 +1,31 @@
 ---
 name: elementor-builder
-description: Construire/modifier des pages Elementor avec des widgets NATIFS via WP-CLI (générer _elementor_data), adapté du projet msrbuilds/elementor-mcp pour un usage direct sans plugin MCP.
+description: Intégrer une maquette / un design en pages Elementor avec des widgets NATIFS, en générant _elementor_data par script WP-CLI, sur n'importe quel site WordPress. Utiliser dès qu'il faut créer ou modifier une page, un header ou un footer Elementor autrement qu'à la main dans l'éditeur.
 ---
 
-# Construire des pages Elementor en widgets natifs (via WP-CLI)
+# Intégrer un design en widgets Elementor natifs (via WP-CLI)
 
-Contexte : ce site tourne Elementor 4.x avec l'expérience **containers active** (flex/grid).
-On ne passe PAS par le plugin elementor-mcp : on génère le JSON `_elementor_data` dans un
-script PHP exécuté par `wp eval-file`. Règle d'or : **widgets natifs d'abord**, le widget
-`html` est un dernier recours pour un micro-détail impossible nativement.
+**Objectif unique de cette skill** : traduire une maquette en pages Elementor composées de
+widgets natifs, par script. Elle est **générique** — aucun site, thème ou design system
+particulier n'y est supposé. Toute donnée propre à un projet (IDs de médias, tokens de
+couleurs, IDs de pages, chemins, identifiants d'accès) reste dans le projet, jamais ici.
+
+Prérequis : Elementor avec l'expérience **containers** active (flex/grid) — le défaut
+depuis Elementor 3.16. On ne passe PAS par un plugin MCP : on génère le JSON
+`_elementor_data` dans un script PHP exécuté par `wp eval-file`.
+
+Règle d'or : **widgets natifs d'abord**, le widget `html` est un dernier recours pour un
+micro-détail impossible nativement.
+
+## Au démarrage sur un projet
+
+1. Relever la version d'Elementor et la présence d'Elementor **Pro**
+   (`wp plugin list --status=active | grep elementor`) : le CSS personnalisé par
+   élément/page/site et le Theme Builder sont des fonctions Pro.
+2. **Sauvegarder la base** avant tout patch (`wp db export`).
+3. Récupérer les tokens du design (couleurs, polices, rayons, rythme vertical) et les
+   médias déjà en médiathèque depuis les sources du projet — les noter dans le contexte
+   du projet (CLAUDE.md / mémoire), pas dans cette skill.
 
 ## Structure des éléments
 
@@ -45,7 +62,9 @@ script PHP exécuté par `wp eval-file`. Règle d'or : **widgets natifs d'abord*
    (+ `_offset_orientation_h => 'end'` pour ancrer à droite).
 7. **Dimensions** : `['unit'=>'px','top'=>..,'right'=>..,'bottom'=>..,'left'=>..,'isLinked'=>false]`.
 8. **Icônes SVG** : `selected_icon => ['value' => ['id'=>ID,'url'=>URL], 'library'=>'svg']`
-   (les SVG du design system sont déjà en médiathèque, IDs 814-841, 887-898).
+   où ID/URL sont ceux de la médiathèque du site (les relever avec
+   `wp post list --post_type=attachment --post_mime_type=image/svg+xml --fields=ID,post_title,guid`).
+   Pour une icône de bibliothèque : `['value' => 'fas fa-check', 'library' => 'fa-solid']`.
 9. **Heading** : `title` accepte du HTML inline (`<em>`), `header_size` = h1…h6,
    `title_color`, `align` ('left'|'center').
 10. **Button** : `text`, `link => ['url'=>..,'is_external'=>''], 'button_text_color',
@@ -156,12 +175,12 @@ suffixe `_hover`). Trois mécanismes combinables :
 // 2. Bordure au survol
 '_border_hover_border' => 'solid',
 '_border_hover_width'  => [ 'unit' => 'px', 'top' => '1', 'right' => '1', 'bottom' => '1', 'left' => '1', 'isLinked' => true ],
-'_border_hover_color'  => '#20C4C3',
+'_border_hover_color'  => '#0073AA', // couleur d'accent du projet
 '__globals__'          => [ '_border_hover_color' => '' ], // vide le global éventuel qui écraserait la couleur locale
 
 // 3. Ombre portée au survol
 '_box_shadow_hover_box_shadow_type' => 'yes',   // activateur
-'_box_shadow_hover_box_shadow'      => [ 'horizontal' => 0, 'vertical' => 0, 'blur' => 70, 'spread' => -23, 'color' => 'rgba(32,196,195,0.22)' ],
+'_box_shadow_hover_box_shadow'      => [ 'horizontal' => 0, 'vertical' => 0, 'blur' => 70, 'spread' => -23, 'color' => 'rgba(0,115,170,0.22)' ],
 ```
 
 Pièges : chaque mécanisme a son **activateur** (`_popover_hover => 'transform'`,
@@ -210,10 +229,11 @@ update_post_meta( $id, '_wp_page_template', 'elementor_header_footer' ); // ou '
 - `curl -sk <url> | grep` un texte attendu + vérifier qu'aucun widget ne rend vide
 - Ouvrir la page dans l'éditeur Elementor : si le JSON est invalide, l'éditeur affiche une page blanche — c'est le signal d'un settings mal formé.
 
-## Design system Altitude Révision (tokens)
+## Tokens du design : où les mettre
 
-Jaune CTA `#ffbd20` (hover `#e0a800`) · Teal `#20c4c3` (dark `#189998`, light `#d0f4f4`)
-· Encre `#1a1a1a`/`#292728` · Texte secondaire `#555`/`#666` · Police **Nunito**
-(400-900) · Radius 8-20px · Sections py 96px · max-width 1280px.
-Référence complète : projet Claude Design "Altitude Révision Design System",
-fichier `colors_and_type.css`.
+Cette skill ne contient **aucun token** (couleurs, polices, rayons, espacements) : ils
+changent à chaque projet. Au début d'une intégration, extraire les tokens de la maquette
+et les consigner côté projet (CLAUDE.md, mémoire projet, ou un fichier CSS de référence),
+puis les câbler dans Elementor de préférence via le **kit actif**
+(`wp option get elementor_active_kit`) → couleurs et polices globales, pour que les
+widgets y fassent référence au lieu de dupliquer des valeurs en dur.
