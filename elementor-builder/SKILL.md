@@ -229,6 +229,52 @@ update_post_meta( $id, '_wp_page_template', 'elementor_header_footer' ); // ou '
 - `curl -sk <url> | grep` un texte attendu + vérifier qu'aucun widget ne rend vide
 - Ouvrir la page dans l'éditeur Elementor : si le JSON est invalide, l'éditeur affiche une page blanche — c'est le signal d'un settings mal formé.
 
+## JetEngine : listing grid + composant listing (contenu dynamique dans Elementor)
+
+Pour une grille de contenus dynamiques (produits, CPT, CCT), le couple JetEngine =
+**Listing** (template d'un item, CPT `jet-engine`) + widget **`jet-listing-grid`** posé
+dans la page, alimenté par une **Query** du Query Builder.
+
+- **Listing** : post `jet-engine` avec `_elementor_data` (structure Elementor normale) +
+  metas `_listing_data` / `_elementor_page_settings` (`listing_source` = `posts|query|...`,
+  `_query_id` = ID de la query). Le construire par script comme n'importe quelle page.
+- **Widget grille** (dans la page) : `widgetType => 'jet-listing-grid'`, settings clés :
+  `lisitng_id` (SIC — la faute de frappe est dans JetEngine, ne pas « corriger »),
+  `columns` / `columns_tablet` / `columns_mobile`, `equal_columns_height => 'yes'`,
+  `not_found_message`. Le tri/filtre vit dans la **query**, pas dans le widget.
+- **Query Builder** : inspecter par script via
+  `\Jet_Engine\Query_Builder\Manager::instance()->get_queries()` (ou `get_query_by_id($id)`,
+  propriété `->query` = args WP_Query). Les queries ne sont PAS des posts.
+- **Widget `jet-listing-dynamic-field`** (dans le listing) :
+  `dynamic_field_source => 'object'` + `dynamic_field_post_object => 'post_title'|'post_content'|...` ;
+  pour une meta, ajouter `dynamic_field_post_meta_custom => 'ma_meta'` (prioritaire sur
+  `post_object`) ; `dynamic_field_format => '%s €'` (sprintf). `post_content` passe par
+  `the_content` → un `<ul>` saisi dans la description d'un produit ressort en vrai `<ul>`
+  stylable en CSS.
+- **Markup rendu** : chaque item = `.jet-listing-grid__item` ; champ =
+  `.jet-listing-dynamic-field__content` (présent même en mode « optimized DOM »).
+  Le gap de la grille se contrôle en CSS : `.jet-listing-grid__items { gap: 22px; }`.
+- **Variante « mise en avant »** d'une carte : si l'ordre de la query est déterministe
+  (tri par meta), cibler `.jet-listing-grid__item:nth-child(N)` en CSS (bordure, badge en
+  `::before` sur la carte flex). Documenter la dépendance à l'ordre.
+- Vérifier le rendu au `curl` : les settings du widget grille sont sérialisés dans
+  `data-nav` — utile pour confirmer `columns`/`posts_num` réellement appliqués.
+
+## Accordéon natif Elementor (`nested-accordion`) — FAQ
+
+- `widgetType => 'nested-accordion'` : les **titres** vivent dans `settings.items`
+  (tableau `{item_title, _id}`) et le **contenu** de chaque item est le N-ième conteneur
+  enfant du widget (`elements[N]`) — garder items et conteneurs alignés (même nombre,
+  même ordre).
+- Settings utiles : `accordion_item_title_icon` / `_icon_active` (chevrons),
+  `accordion_item_title_icon_position => 'end'`, `faq_schema => 'yes'` (rich snippet),
+  `default_state` (premier item ouvert par défaut).
+- Markup rendu : `<details class="e-n-accordion-item"><summary class="e-n-accordion-item-title">`
+  → styler en CSS via une classe posée sur le widget (`_css_classes`) :
+  `.ma-faq .e-n-accordion-item { ... }`, état ouvert `.e-n-accordion-item[open]`,
+  icône `.e-n-accordion-item-title-icon`. Penser à neutraliser le padding par défaut des
+  conteneurs de contenu (`--container-default-padding-*`).
+
 ## Tokens du design : où les mettre
 
 Cette skill ne contient **aucun token** (couleurs, polices, rayons, espacements) : ils
